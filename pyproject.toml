@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 pythonpath = [
-  "src"
+  "src",
+  "D:/kaam/python-opc-lite/src",
 ]
 
