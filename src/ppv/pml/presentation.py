@@ -4,7 +4,8 @@ from ..core.package import Package
 
 class Presentation(XmlTypeobj):
     uri_str = "/ppt/presentation.xml"
-    type = "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"
+    type = ("application/vnd.openxmlformats-officedocument.presentationml."
+            "presentation.main+xml")
 
     @classmethod
     def create(cls, path):
@@ -63,3 +64,7 @@ class Presentation(XmlTypeobj):
             id_e = lst_e.findqn(pfxname_id)
             if id_e is not None:
                 return id_e.getqn('r:id')
+
+    @property
+    def SlideMasters(self):
+        pass

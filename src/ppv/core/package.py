@@ -7,7 +7,7 @@ class Package(OPCPackage):
         from ..pml.handoutmaster import HandoutMaster
         from ..pml.notesmaster import NotesMaster
         from ..pml.slide import Slide
-        from ..pml.slidemaster import SlideMaster
+        from ..pml.master import Master
         from ..pml.presentationpr import PresentationPr
         from ..pml.viewpr import ViewPr
         from ..pml.tablestyles import TableStyles
@@ -24,7 +24,7 @@ class Package(OPCPackage):
         self.register_part_hook(HandoutMaster.type, HandoutMaster)
         self.register_part_hook(NotesMaster.type, NotesMaster)
         self.register_part_hook(Slide.type, Slide)
-        self.register_part_hook(SlideMaster.type, SlideMaster)
+        self.register_part_hook(Master.type, Master)
         self.register_part_hook(SlideLayout.type, SlideLayout)
         self.register_part_hook(PresentationPr.type, PresentationPr)
         self.register_part_hook(ViewPr.type, ViewPr)

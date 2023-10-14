@@ -1,8 +1,15 @@
 from lxml import etree
+from copy import deepcopy
+from pathlib import Path
 from opc.parser import ElementBase as _ElementBase
 
 
 class ElementBase(_ElementBase):
+
+    @property
+    def ln(self):
+        return etree.QName(self).localname
+
     def findqn(self, path, namespaces=None):
         path = self.qn(path, nsmap=namespaces)
         return super().find(path)
@@ -14,6 +21,30 @@ class ElementBase(_ElementBase):
     def getqn(self, key, default=None):
         key = self.qn(key)
         return super().get(key, default)
+
+    def deepcopy(self):
+        return deepcopy(self)
+
+    @property
+    def makeelement(self):
+        return self.parser.makeelement
+
+    @property
+    def data_path(self):
+        return Path(__file__).parent.parent / "data"
+
+    @property
+    def parser(self):
+        return Parser()
+
+    def parse_file(self, path):
+        with open(path) as f:
+            return self.parser.parse(f)
+
+    @property
+    def length(self):
+        from ppv.utils.length import Length
+        return Length
 
 
 class Parser(etree.XMLParser):

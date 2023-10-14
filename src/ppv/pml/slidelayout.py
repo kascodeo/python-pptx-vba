@@ -6,3 +6,18 @@ class SlideLayout(XmlTypeobj):
             "slideLayout+xml")
     reltype = ("http://schemas.openxmlformats.org/officeDocument/2006/"
                "relationships/slideLayout")
+
+    def Delete(self):
+        pass
+
+    @property
+    def Parent(self):
+        pass
+
+    @property
+    def FollowMasterBackground(self):
+        pass
+
+    @property
+    def Shapes(self):
+        pass

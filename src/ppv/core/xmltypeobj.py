@@ -11,6 +11,10 @@ class XmlTypeobj(AppMixin, TypeobjBase):
     def e(self):
         return self._e
 
+    @e.setter
+    def e(self, value):
+        self._e = value
+
     @property
     def Parent(self):
         return self.part.package.document

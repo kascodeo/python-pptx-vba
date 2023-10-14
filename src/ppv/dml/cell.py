@@ -1,0 +1,30 @@
+class Cell():
+    def __init__(self, table, e):
+        self._table = table
+        self._e = e
+        self._shape = None
+
+    @property
+    def e(self):  # 'a:tc'
+        return self._e
+
+    def Merge(self):
+        pass
+
+    def Split(self):
+        pass
+
+    @property
+    def Borders(self):
+        pass
+
+    @property
+    def Parent(self):
+        return self._table
+
+    @property
+    def Shape(self):
+        from ..pml.shape import Shape
+        if self._shape is None:
+            self._shape = Shape(self, self.e)
+        return self._shape

@@ -1,5 +1,6 @@
 class Application():
-    """Object of this class represents the Powerpoint Application in this library"""
+    """Object of this class represents the Powerpoint Application in this
+    library"""
     __instance = None
 
     def __new__(cls):

@@ -4,7 +4,7 @@ from ppv.pml.presentation import Presentation
 from ppv.pml.handoutmaster import HandoutMaster
 from ppv.pml.notesmaster import NotesMaster
 from ppv.pml.slide import Slide
-from ppv.pml.slidemaster import SlideMaster
+from ppv.pml.master import Master
 from ppv.pml.presentationpr import PresentationPr
 from ppv.pml.viewpr import ViewPr
 from ppv.pml.tablestyles import TableStyles
@@ -21,7 +21,7 @@ from ppv.img.image import Image
                                     HandoutMaster,
                                     NotesMaster,
                                     Slide,
-                                    SlideMaster,
+                                    Master,
                                     PresentationPr,
                                     ViewPr,
                                     TableStyles,

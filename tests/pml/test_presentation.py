@@ -30,8 +30,8 @@ def test_NotesMaster(allinone_pres):
 
 
 def test_SlideMaster(blank_pres):
-    from ppv.pml.slidemaster import SlideMaster
-    assert isinstance(blank_pres.SlideMaster, SlideMaster)
+    from ppv.pml.master import Master
+    assert isinstance(blank_pres.SlideMaster, Master)
 
 
 def test_Slides(blank_pres):
