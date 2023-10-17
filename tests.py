@@ -173,27 +173,27 @@ except:
 # sld.NotesPage
 
 # ------------------------------
-# pres = Presentations.Add()
-# sld = pres.Slides.Item(1)
-# sp = sld.Shapes.AddTextbox(
-#     MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
-# tf = sp.TextFrame
-# tr = tf.TextRange
-# # tr.e.dump()
-# print()
-# t = tr.e.find('.//'+tr.e.qn('a:t'))
-# # t.text = ''
-# print(tr.Text)
-# print()
-# tr_ = tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
-# print("$: ", tr_.Text)
-# print("$: ", tr.Text)
-# print()
-# tr_ = tr.InsertBefore("=inser\r\nted be\r\nfore=\r\n")
-# # tr.e.dump()
-# print("$: ", tr_.Text)
-# print("$: ", tr.Text)
-# print()
+pres = Presentations.Add()
+sld = pres.Slides.Item(1)
+sp = sld.Shapes.AddTextbox(
+    MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
+tf = sp.TextFrame
+tr = tf.TextRange
+# tr.e.dump()
+print()
+t = tr.e.find('.//'+tr.e.qn('a:t'))
+# t.text = ''
+print(tr.Text)
+print()
+tr_ = tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
+print("$: ", tr_.Text)
+print("$: ", tr.Text)
+print()
+tr_ = tr.InsertBefore("=inser\r\nted be\r\nfore=\r\n")
+# tr.e.dump()
+print("$: ", tr_.Text)
+print("$: ", tr.Text)
+print()
 # # tr._istart = 2
 # # tr._length = 1
 # # tr.isolate()

@@ -21,6 +21,162 @@ class TextRange():
         from ppv.dml.font import Font
         return Font(self)
 
+    def Characters(self, Start=-1, Length=-1):
+        if Start == 0:
+            Start = 1
+        if Length == 0:
+            Length = 1
+
+        lst_c = self.get_c_in_range()
+        num = len(lst_c)
+        if Start == -1 and Length == -1:
+            # Both Start and Length are Omitted then returned range is of all
+            # paragraphs
+            start_index = 0
+            end_index = start_index + num - 1
+
+        if Start != -1 and Length == -1:
+            # Just Start is specified then returned range is specified
+            # paragraph only
+            start_index = Start - 1
+            end_index = Start - 1
+
+        if Start == -1 and Length != -1:
+            # Start is Omitted and Length is specified then
+            # returned range starts from first paragraph till length of
+            # paragraphs
+            start_index = 0
+            end_index = start_index + Length - 1
+
+        if Start != -1 and Length != -1:
+            # Both Start and Length are specified
+            start_index = Start - 1
+            end_index = start_index + Length - 1
+
+        if start_index > num - 1:
+            start_index = num - 1
+
+        if end_index > num - 1:
+            end_index = num - 1
+
+        lst = lst_c[start_index:end_index+1]
+        c_start = lst[0]
+        c_end = lst[-1]
+        istart = c_start.ic
+        iend = c_end.ic
+
+        return self.__class__(self._textframe, istart, iend-istart+1)
+
+    def Paragraphs(self, Start=-1, Length=-1):
+        if Start == 0:
+            Start = 1
+        if Length == 0:
+            Length = 1
+
+        lst_p = self.get_p_in_range()
+        num = len(lst_p)
+        if Start == -1 and Length == -1:
+            # Both Start and Length are Omitted then returned range is of all
+            # paragraphs
+            start_index = 0
+            end_index = start_index + num - 1
+
+        if Start != -1 and Length == -1:
+            # Just Start is specified then returned range is specified
+            # paragraph only
+            start_index = Start - 1
+            end_index = Start - 1
+
+        if Start == -1 and Length != -1:
+            # Start is Omitted and Length is specified then
+            # returned range starts from first paragraph till length of
+            # paragraphs
+            start_index = 0
+            end_index = start_index + Length - 1
+
+        if Start != -1 and Length != -1:
+            # Both Start and Length are specified
+            start_index = Start - 1
+            end_index = start_index + Length - 1
+
+        if start_index > num - 1:
+            start_index = num - 1
+
+        if end_index > num - 1:
+            end_index = num - 1
+
+        lst = lst_p[start_index:end_index+1]
+        p_start = lst[0]
+        p_end = lst[-1]
+        istart = 0
+        iend = 0
+        flag_istart = True
+        chars = self.get_chars()
+        for char in chars.values():
+            p = char.p
+            if flag_istart and p is p_start:
+                istart = char.ic
+                flag_istart = False
+            if p is p_end:
+                iend = char.ic
+
+        return self.__class__(self._textframe, istart, iend-istart+1)
+
+    def Runs(self, Start=-1, Length=-1):
+        if Start == 0:
+            Start = 1
+        if Length == 0:
+            Length = 1
+
+        lst_r = self.get_r_in_range()
+        num = len(lst_r)
+        if Start == -1 and Length == -1:
+            # Both Start and Length are Omitted then returned range is of all
+            # paragraphs
+            start_index = 0
+            end_index = start_index + num - 1
+
+        if Start != -1 and Length == -1:
+            # Just Start is specified then returned range is specified
+            # paragraph only
+            start_index = Start - 1
+            end_index = Start - 1
+
+        if Start == -1 and Length != -1:
+            # Start is Omitted and Length is specified then
+            # returned range starts from first paragraph till length of
+            # paragraphs
+            start_index = 0
+            end_index = start_index + Length - 1
+
+        if Start != -1 and Length != -1:
+            # Both Start and Length are specified
+            start_index = Start - 1
+            end_index = start_index + Length - 1
+
+        if start_index > num - 1:
+            start_index = num - 1
+
+        if end_index > num - 1:
+            end_index = num - 1
+
+        lst = lst_r[start_index:end_index+1]
+        r_start = lst[0]
+        r_end = lst[-1]
+        istart = 0
+        iend = 0
+        flag_istart = True
+        chars = self.get_chars()
+        for char in chars.values():
+            r = char.r
+            if flag_istart and r is r_start:
+                istart = char.ic
+                flag_istart = False
+            if r is r_end:
+                iend = char.ic
+
+        return self.__class__(self._textframe, istart, iend-istart+1)
+
     @property
     def Text(self):
         text = ''
@@ -304,3 +460,24 @@ class TextRange():
         if t.text is None:
             return ''
         return t.text
+
+    def get_p_in_range(self):
+        chars = self.get_chars_in_range()
+        lst = []
+        for char in chars:
+            p = char.p
+            if p not in lst:
+                lst.append(p)
+        return lst
+
+    def get_r_in_range(self):
+        chars = self.get_chars_in_range()
+        lst = []
+        for char in chars:
+            r = char.r
+            if r not in lst:
+                lst.append(r)
+        return lst
+
+    def get_c_in_range(self):
+        return self.get_chars_in_range()
