@@ -73,10 +73,14 @@ class TextRange():
             tr = self.__class__(self._textframe, self.istart-1, 1)
             tr.InsertAfter(NewText)
 
+        if self._length is not None:
+            self._length = self.get_length_lines(self.get_lines(NewText))
+
     def InsertAfter(self, NewText):
         if len(NewText) == 0 or not isinstance(NewText, str):
             raise ValueError("NewText must be non zero length string")
 
+        iend = self.iend
         self.split_right()
         lines = self.get_lines(NewText)
         line_first = lines[0]
@@ -125,6 +129,10 @@ class TextRange():
             t.text = text[1:]
             self._del_r_if_empty(t)
 
+        tr_new = self.__class__(self._textframe, iend+1,
+                                self.get_length_lines(lines))
+        return tr_new
+
     def InsertBefore(self, NewText):
         if len(NewText) == 0 or not isinstance(NewText, str):
             raise ValueError("NewText must be non zero length string")
@@ -141,6 +149,12 @@ class TextRange():
             t.text = t.text[1:]
             self._del_r_if_empty(t)
 
+        lines = self.get_lines(NewText)
+        tr_new = self.__class__(self._textframe, self.istart,
+                                self.get_length_lines(lines))
+        if self._istart is not None:
+            self._istart = self._istart + self.get_length_lines(lines)
+        return tr_new
 # -----------------------------------------------
 
     def _del_r_if_empty(self, t):
@@ -271,6 +285,12 @@ class TextRange():
 
     def get_lines(self, txt):
         return re.split(r'\r\n|\r|\n', txt)
+
+    def get_length_lines(self, lines):
+        count = 0
+        for line in lines:
+            count += len(line)
+        return count
 
     def get_or_create_p_r_t(self):
         p = self.get_or_create_para()

@@ -151,6 +151,10 @@ except:
 # print()
 # tbl.Rows.Add(2)
 # print('tbl.Rows.Count =', tbl.Rows.Count)
+# cl = tbl.Rows.Item(2).Cells.Item(1)
+# print(cl.Shape.TextFrame.TextRange.Text)
+# cl.Shape.TextFrame.TextRange.Text = "new text in new row"
+# print(cl.Shape.TextFrame.TextRange.Text)
 # print()
 # print()
 # print('tbl.Columns.Count =', tbl.Columns.Count)
@@ -169,26 +173,27 @@ except:
 # sld.NotesPage
 
 # ------------------------------
-pres = Presentations.Add()
-sld = pres.Slides.Item(1)
-sp = sld.Shapes.AddTextbox(
-    MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
-tf = sp.TextFrame
-tr = tf.TextRange
-# tr.e.dump()
-print()
-t = tr.e.find('.//'+tr.e.qn('a:t'))
-# t.text = ''
-print(tr.Text)
-print()
-tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
-print(tr.Text)
-print()
-tr.e.dump()
-tr.InsertBefore("=inser\r\nted be\r\nfore=")
-tr.e.dump()
-print(tr.Text)
-print()
-# tr._istart = 2
-# tr._length = 1
-# tr.isolate()
+# pres = Presentations.Add()
+# sld = pres.Slides.Item(1)
+# sp = sld.Shapes.AddTextbox(
+#     MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
+# tf = sp.TextFrame
+# tr = tf.TextRange
+# # tr.e.dump()
+# print()
+# t = tr.e.find('.//'+tr.e.qn('a:t'))
+# # t.text = ''
+# print(tr.Text)
+# print()
+# tr_ = tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
+# print("$: ", tr_.Text)
+# print("$: ", tr.Text)
+# print()
+# tr_ = tr.InsertBefore("=inser\r\nted be\r\nfore=\r\n")
+# # tr.e.dump()
+# print("$: ", tr_.Text)
+# print("$: ", tr.Text)
+# print()
+# # tr._istart = 2
+# # tr._length = 1
+# # tr.isolate()
