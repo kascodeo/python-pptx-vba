@@ -3,10 +3,10 @@ import re
 
 
 class TextRange():
-    def __init__(self, textframe, Start=None, Length=None):
+    def __init__(self, textframe, istart=None, length=None):
         self._textframe = textframe
-        self._start = Start
-        self._length = Length
+        self._istart = istart
+        self._length = length
 
     @property
     def Parent(self):
@@ -23,14 +23,10 @@ class TextRange():
 
     @property
     def Text(self):
-        Start = self.get_start()
-        Length = self.get_length()
-
         text = ''
         prev_p = None
-        chars = self.get_info()['chars']
-        for i in range(Start-1, Start-1 + Length):
-            ch = chars[i]
+        chars = self.get_chars_in_range()
+        for i, ch in enumerate(chars):
             p = ch.p
             if prev_p is not None and prev_p is not p:
                 text += '\r\n'
@@ -40,245 +36,251 @@ class TextRange():
 
     @Text.setter
     def Text(self, NewText):
-        Start = self.get_start()
-        Length = self.get_length()
+        # isolate
+        self.isolate()
+        chars = self.get_chars_in_range()
 
-        self.add_run_if_not_present()
+        lst_r = []
+        for ch in chars:
+            r = ch.r
+            if r not in lst_r:
+                lst_r.append(r)
+        lst_p = []
+        for ch in chars:
+            p = ch.p
+            if p not in lst_p:
+                lst_p.append(p)
 
-        self.split_p_after(Start+Length-1)
+        for r in lst_r:
+            r.getparent().remove(r)
 
-        # for splitting p after Start -1
-        flag = False
-        if Start == 1:
-            t = self._t(self.get_info()['chars'][0].r)
-            t.text = 'Z'+t.text
-            Start += 1
-            flag = True
-
-        self.split_p_after(Start-1)
-
-        if flag:
-            t = self._t(self.get_info()['chars'][0].r)
-            t.text = t.text[1:]
-            Start -= 1
-        # end of splitting
-
-        chars = self.get_info()['chars']
-        p_lst = []
-        for i in range(Start-1, Start-1 + Length):
-            ch = chars[i]
-            if ch.p not in p_lst:
-                p_lst.append(ch.p)
-
-        # remove paragraphs from second to end in range
-        for p in p_lst[1:]:
+        for p in lst_p[1:-1]:
             p.getparent().remove(p)
 
-        # remove runs except first, in first para
-        p = p_lst[0]
-        r_lst = p.findallqn('a:r')
-        for r in r_lst[1:]:
-            r.getparent().remove(r)
-        r = r_lst[0]
-        self._t(r).text = ''
-        if self._length is not None:
-            self._length = self.Characters(Start, 1).InsertBefore(
-                NewText)._length
+        if len(lst_p) > 1:
+            self.join_para(lst_p[0], lst_p[-1])
 
-    def Characters(self, Start, Length):
-        return self.__class__(self._textframe, Start, Length)
+        if NewText == '':
+            return
 
-    def get_info(self):
-        chars = OrderedDict()
-        Char = namedtuple('Char', ['ip', 'ir',  'ic', 'p', 'r', 'c', 'irp'])
-        ic = -1
-        for p in self.e.findallqn('a:p'):
-            ip = -1
-            for irp, r in enumerate(p.findallqn('a:r')):
-                t = r.findqn('a:t')
-                if t is not None:
-                    for ir, c in enumerate(t.text):
-                        ic += 1
-                        ip += 1
-                        chars[ic] = Char(ip, ir, ic, p, r, c, irp)
-        return {'chars': chars}
+        if len(chars) == 0:
+            if self.istart != 0:
+                raise ValueError("Use new TextRange.")
+            else:
+                tr = self.Parent.TextRange
+                tr.InsertBefore(NewText)
+        else:
+            tr = self.__class__(self._textframe, self.istart-1, 1)
+            tr.InsertAfter(NewText)
 
     def InsertAfter(self, NewText):
         if len(NewText) == 0 or not isinstance(NewText, str):
             raise ValueError("NewText must be non zero length string")
-        Start = self.get_start()
-        Length = self.get_length()
 
-        self._insert_after(NewText, Start, Length)
-
-        newlength = self._length_of_text(NewText)
-        return self.__class__(self._textframe, Start+Length, newlength)
-
-    def _length_of_text(self, NewText):
-        return sum([len(line) for line in self.get_lines(NewText)])
-
-    def _insert_after(self, NewText, Start, Length):
+        self.split_right()
         lines = self.get_lines(NewText)
+        line_first = lines[0]
+        chars = self.get_chars_in_range()
 
-        End = Start + Length - 1
+        flag = False
+        if len(chars) == 0:
+            if self.istart == 0:
+                p, r, t = self.get_or_create_p_r_t()
+                t.text = 'Z'
+                flag = True
+                chars = self.get_chars_in_range()
+            else:
+                raise ValueError("zero Length. Use other Text Range object")
 
-        # splitting the para needed because additional paras to be inserted
+        ch = chars[-1]
+        r = ch.r
+        p = ch.p
+        if line_first != '':
+            r_ = r.deepcopy()
+            r.addnext(r_)
+            t_ = r_.findqn('a:t')
+            t_.text = line_first
+            r = r_
         if len(lines) > 1:
-            self.split_p_after(End)
+            lst_r = []
+            for e in r.itersiblings():
+                if e.tag == r.tag:
+                    lst_r.append(e)
+            p_ = self.add_para(p)
+            for r in reversed(lst_r):
+                p_.insert(0, r)
 
-        # insert the first line in given text at end of the end char
-        line = lines[0]
-        chars = self.get_info()['chars']
-        char = chars[End-1]
-        t = self._t(char.r)
-        t.text = t.text[:char.ir+1]+line+t.text[char.ir+1:]
-
-        # create new para each for second line onwards after the above para
-        p = char.p
+        p = ch.p
         for line in lines[1:]:
-            p_ = p.deepcopy()
-            p.addnext(p_)
-            for r_ in p_.findallqn('a:r')[1:]:  # remove all r but first
-                r_.getparent().remove(r_)
-            r_ = p_.findqn('a:r')
-            t_ = self._t(r_)
-            t_.text = line  # replace the text with the given line text
-            p = p_  # needed to add the next para after the current added para
+            p = self.add_para(p)
+            r, rpr, t = self.add_run(p)
+            t.text = line
+        p_ = p.getnext()
+        if p_ is not None and p_.tag == p.tag:
+            self.join_para(p, p_)
+
+        if flag:
+            t = chars[0].t
+            text = self.get_text(t)
+            t.text = text[1:]
+            self._del_r_if_empty(t)
 
     def InsertBefore(self, NewText):
         if len(NewText) == 0 or not isinstance(NewText, str):
             raise ValueError("NewText must be non zero length string")
 
-        Start = self.get_start()
-
-        flag = False
-        if Start == 1:
-            t = self._t(self.get_info()['chars'][0].r)
-            t.text = 'Z'+t.text
-            Start += 1
-            flag = True
-
-        tr_previous_char = self.Characters(Start-1, 1)
-        tr_previous_char.InsertAfter(NewText)
-
-        if flag:
-            t = self._t(self.get_info()['chars'][0].r)
+        if self.istart - 1 in self.get_chars():
+            tr = self.__class__(self._textframe, self.istart-1, 1)
+            tr.InsertAfter(NewText)
+        else:
+            p, r, t = self.get_or_create_p_r_t()
+            text = self.get_text(t)
+            t.text = 'Z'+text
+            tr = self.__class__(self._textframe, 0, 1)
+            tr.InsertAfter(NewText)
             t.text = t.text[1:]
-            Start -= 1
+            self._del_r_if_empty(t)
 
-        newlength = self._length_of_text(NewText)
-        return self.__class__(self._textframe, Start, newlength)
+# -----------------------------------------------
 
-    def split_p_after(self, End):
-        if self.is_char_at_end_of_p(End):
-            return  # end char is already at end of para. no need to split
-
-        # split the run after the end char
-        self.split_r_after(End)
-
-        # gather all runs after the end char in the para
-        chars = self.get_info()['chars']
-        char = chars[End-1]
-        p = char.p
-        r_lst = []
-        for i in range(char.ic+1, len(chars)):
-            if p is chars[i].p:
-                if chars[i].r not in r_lst:
-                    r_lst.append(chars[i].r)
-
-        # copy the para add next, remove all runs, move fathered runs to para
-        p_ = p.deepcopy()
-        p.addnext(p_)
-        for r in p_.findallqn('a:r'):
+    def _del_r_if_empty(self, t):
+        if t.text == '' or t.text is None:
+            r = t.getparent()
             r.getparent().remove(r)
-        for i, r in enumerate(r_lst):
-            p_.insert(i, r)
 
-        #
+    def get_chars(self):
+        chars = OrderedDict()
+        Char = namedtuple('Char',
+                          ['ip', 'ir', 'ic', 'p', 'r', 't', 'c', 'irp'])
+        ic = -1
+        for p in self.e.findallqn('a:p'):
+            ip = -1
+            for irp, r in enumerate(p.findallqn('a:r')):
+                t = r.findqn('a:t')
+                if t is not None and t.text is not None:
+                    for ir, c in enumerate(t.text):
+                        ic += 1
+                        ip += 1
+                        chars[ic] = Char(ip, ir, ic, p, r, t, c, irp)
+        return chars
 
-    def split_r_after(self, End):
-        if self.is_char_at_end_of_r(End):
-            return  # end char is already at end of run. no need to split
+    def get_chars_in_range(self):
+        chars = self.get_chars()
+        lst = []
+        for i in range(self.istart, self.iend+1):
+            char = chars[i]
+            lst.append(char)
+        return lst
 
-        chars = self.get_info()['chars']
-        char = chars[End-1]
+    @property
+    def istart(self):
+        if self._istart is None:
+            return 0
+        if self._istart < 0:
+            return 0
+        if self._istart > len(self.get_chars()) - 1:
+            return len(self.get_chars()) - 1
+        return self._istart
+
+    @property
+    def length(self):
+        if self._length is None:
+            return len(self.get_chars())
+        return self._length
+
+    @property
+    def iend(self):
+        res = self.istart + self.length - 1
+        # if res < 0:
+        #     return 0
+        if res > len(self.get_chars())-1:
+            return len(self.get_chars()) - 1
+        return res
+
+    def isolate(self):
+        self.split_left()
+        self.split_right()
+
+    def split_left(self):
+        chars = self.get_chars_in_range()
+        if len(chars) == 0:
+            return
+
+        char = chars[0]
+        if char.ir == 0:
+            return
+
         r = char.r
-        t = self._t(r)
-        r_ = r.deepcopy()   # copy and add next to the run
-        t.text = t.text[:char.ir+1]  # keep chars till end char
+        r_ = r.deepcopy()
         r.addnext(r_)
-        t_ = self._t(r_)
-        t_.text = t_.text[char.ir+1:]   # keep chars after end char
+        t = char.t
+        text = self.get_text(t)
+        t.text = text[:char.ir]
+        t_ = r_.findqn('a:t')
+        text_ = self.get_text(t_)
+        t_.text = text_[char.ir:]
 
-    def is_char_at_end_of_r(self, End):
-        chars = self.get_info()['chars']
-        char = chars[End-1]
-        if (char.ic+1 not in chars) or not (char.r is chars[char.ic+1].r):
-            return True
-        return False
+    def split_right(self):
+        chars = self.get_chars_in_range()
+        if len(chars) == 0:
+            return
 
-    def is_char_at_end_of_p(self, End):
-        chars = self.get_info()['chars']
-        char = chars[End-1]
-        if (char.ic + 1 not in chars) or not (char.p is chars[char.ic + 1].p):
-            return True
-        return False
+        char = chars[-1]
+        if char.ir == len(char.t.text)-1:
+            return
 
-    def add_run_if_not_present(self, p=None):
+        r = char.r
+        r_ = r.deepcopy()
+        r.addnext(r_)
+        t = char.t
+        t.text = t.text[:char.ir+1]
+        t_ = r_.findqn('a:t')
+        t_.text = t_.text[char.ir+1:]
+
+    def join_para(self, base_p, del_p):
+        endpara = del_p[-1]
+        endpara.getparent().remove(endpara)
+        for e in del_p:
+            base_p.append(e)
+        del_p.getparent().remove(del_p)
+
+    def get_or_create_para(self):
+        p = self.e.findqn('a:p')
         if p is None:
-            p = self.e.findqn('a:p')
-        if p is not None and p.findqn('a:r') is None:
-            pr = p.findqn('a:endParaRPr')
-            attrib = {}
-            if pr is not None:
-                attrib = pr.attrib
-            r = p.makeelement(p.qn('a:r'), attrib=attrib)
-            p.insert(0, r)
-            t = r.makeelement(r.qn('a:t'))
-            r.insert(0, t)
+            p = self.e.makeelement(self.e.qn('a:p'))
+            self.e.append(p)
+            p.append(p.makeelement(p.qn('a:endParaRPr')))
+        return p
+
+    def add_para(self, after_p):
+        p = after_p.deepcopy()
+        after_p.addnext(p)
+        for r in p.findallqn('a:r'):
+            r.getparent().remove(r)
+        return p
+
+    def add_run(self, p):
+        r = p.makeelement(p.qn('a:r'), attrib=p[-1].attrib)
+        t = p.makeelement(p.qn('a:t'))
+        p.insert(-1, r)
+
+        rpr = r.makeelement(r.qn('a:rPr'))
+        r.insert(0, rpr)
+        r.insert(1, t)
+        return r, rpr, t
 
     def get_lines(self, txt):
         return re.split(r'\r\n|\r|\n', txt)
 
-    def get_start(self):
-        return 1 if self._start is None else self._start
+    def get_or_create_p_r_t(self):
+        p = self.get_or_create_para()
+        r = p.findqn('a:r')
+        if r is None:
+            r, rpr, t = self.add_run(p)
+        t = r.findqn('a:t')
+        return p, r, t
 
-    def get_length(self):
-        return len(self.get_info()['chars']) if self._length is None \
-            else self._length
-
-    def _t(self, r):
-        return r.findqn('a:t')
-
-    def get_chars(self):
-        Start = self.get_start()
-        Length = self.get_length()
-
-        chars = self.get_info()['chars']
-        lst = []
-        for i in range(Start-1, Start-1 + Length):
-            lst.append(chars[i])
-        return lst
-
-    def get_runs(self):
-        lst = []
-        for ch in self.get_chars():
-            if ch.r not in lst:
-                lst.append(ch.r)
-        return lst
-
-    def get_rpr(self):
-        lst = []
-        for r in self.get_runs():
-            rpr = r.findqn('a:rPr')
-            lst.append(rpr)
-        return lst
-
-    def isolate(self):
-        Start = self.get_start()
-        Length = self.get_length()
-        End = Start + Length - 1
-
-        self.split_p_after(End)
-        if Start > 1:
-            self.split_p_after(Start-1)
+    def get_text(self, t):
+        if t.text is None:
+            return ''
+        return t.text

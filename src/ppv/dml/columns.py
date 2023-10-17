@@ -28,5 +28,44 @@ class Columns(Collection):
             lst.append(self._coll[e])
         return lst
 
-    def Add(self):
-        pass
+    def Add(self, BeforeColumn=-1):
+        if BeforeColumn not in [-1] + list(range(1, self.Count+1)):
+            raise ValueError("BeforeColumn must be from 1 to Count(inclusive)")
+
+        index_to_copy = 0 if BeforeColumn == 1 else \
+            self.Count - 1 if BeforeColumn == -1 else \
+            BeforeColumn - 2
+
+        e_col_to_copy = self.get_all()[index_to_copy].e
+        e_col_new = e_col_to_copy.deepcopy()
+
+        index_insert = self.Count if BeforeColumn == -1 else BeforeColumn - 1
+        self.e_tblGrid.insert(index_insert, e_col_new)
+
+        for row in self.Parent.Rows.get_all():
+            cell_to_copy = row.Cells.Item(index_to_copy+1)
+            e_cell_new = cell_to_copy.e.deepcopy()
+            e_cell = e_cell_new
+            for p in e_cell.findqn('a:txBody').findallqn('a:p')[1:]:
+                p.getparent().remove(p)
+            p = e_cell.findqn('a:txBody').findqn('a:p')
+            if p is not None:
+                for r in p.findallqn('a:r')[1:]:
+                    r.getparent().remove(r)
+                r = p.findqn('a:r')
+                if r is not None:
+                    t = r.findqn('a:t')
+                    if t is not None:
+                        t.text = ''
+
+            if BeforeColumn == -1:
+                row.Cells.get_all()[-1].e.addnext(e_cell_new)
+            else:
+                row.Cells.get_all()[BeforeColumn-1].e.addprevious(e_cell_new)
+
+        for col in self.get_all():
+            if col.e is e_col_new:
+                col.change_colId()
+                for cell in col.Cells.get_all():
+                    cell.clear_text()
+                return col

@@ -32,3 +32,16 @@ class Row():
         for i, e in enumerate(self.Parent.Rows.e_lst_tr):
             if e is self.e:
                 return i
+
+    @property
+    def rowId(self):
+        e = self.e
+        return e.find('./'+e.qn('a:extLst')+'/'+e.qn('a:ext')+'/*[@val]').\
+            get('val')
+
+    def change_rowId(self):
+        from ppv.utils.randomid import RandomId
+        id = str(RandomId.get())
+        e = self.e
+        e.find('./'+e.qn('a:extLst')+'/'+e.qn('a:ext')+'/*[@val]').\
+            set('val', id)

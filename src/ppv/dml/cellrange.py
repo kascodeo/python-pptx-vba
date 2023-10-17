@@ -16,7 +16,7 @@ class CellRange(Collection):
         from .cell import Cell
         if isinstance(self.Parent, Column):
             col_index = self.Parent.index
-            table = self.Parent.Parent.Parent
+            table = self.Parent.Parent.Parent.Table
             lst = []
             for row in table.Rows.get_all():
                 lst.append(row.Cells.Item(col_index+1))

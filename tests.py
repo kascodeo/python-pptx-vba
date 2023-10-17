@@ -130,18 +130,65 @@ except:
 # pres.SaveAs("tmp/saved.pptx")
 # ------------------------------------------------
 
-pres = Presentations.Open2007("tmp/tables.pptx")
+# pres = Presentations.Open2007("tmp/tables.pptx")
+# sld = pres.Slides.Item(1)
+# sp = sld.Shapes.Item(1)
+# tbl = sp.Table
+# print('tbl.Rows.Count =', tbl.Rows.Count)
+# print('tbl.Columns.Count =', tbl.Columns.Count)
+# print(tbl.Rows.Item(1).index == 0)
+# print(tbl.Rows.Item(5).index == 4)
+# cl = tbl.Rows.Item(1).Cells.Item(1)
+# print(cl.Shape)
+# print(cl.Shape.HasTextFrame)
+# print(cl.Shape.TextFrame)
+# tf = cl.Shape.TextFrame
+# tr = tf.TextRange
+# print()
+# print('tbl.Rows.Count =', tbl.Rows.Count)
+# tbl.Rows.Add()
+# print('tbl.Rows.Count =', tbl.Rows.Count)
+# print()
+# tbl.Rows.Add(2)
+# print('tbl.Rows.Count =', tbl.Rows.Count)
+# print()
+# print()
+# print('tbl.Columns.Count =', tbl.Columns.Count)
+# tbl.Columns.Add()
+# print('tbl.Columns.Count =', tbl.Columns.Count)
+# print()
+# tbl.Columns.Add(2)
+# print('tbl.Columns.Count =', tbl.Columns.Count)
+# print()
+# pres.SaveAs("tmp/saved.pptx")
+
+# -----------------------------
+# pres = Presentations.Open2007("tmp/notepage.pptx")
+# sld = pres.Slides.Item(1)
+# sld.HasNotesPage
+# sld.NotesPage
+
+# ------------------------------
+pres = Presentations.Add()
 sld = pres.Slides.Item(1)
-sp = sld.Shapes.Item(1)
-tbl = sp.Table
-print('tbl.Rows.Count =', tbl.Rows.Count)
-print('tbl.Columns.Count =', tbl.Columns.Count)
-print(tbl.Rows.Item(1).index == 0)
-print(tbl.Rows.Item(5).index == 4)
-cl = tbl.Rows.Item(1).Cells.Item(1)
-print(cl.Shape)
-print(cl.Shape.HasTextFrame)
-print(cl.Shape.TextFrame)
-tf = cl.Shape.TextFrame
+sp = sld.Shapes.AddTextbox(
+    MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
+tf = sp.TextFrame
 tr = tf.TextRange
-tr.Text = 'some'
+# tr.e.dump()
+print()
+t = tr.e.find('.//'+tr.e.qn('a:t'))
+# t.text = ''
+print(tr.Text)
+print()
+tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
+print(tr.Text)
+print()
+tr.e.dump()
+tr.InsertBefore("=inser\r\nted be\r\nfore=")
+tr.e.dump()
+print(tr.Text)
+print()
+# tr._istart = 2
+# tr._length = 1
+# tr.isolate()
