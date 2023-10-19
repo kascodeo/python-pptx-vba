@@ -8,6 +8,8 @@ sys.path.insert(0, '../python-opc-lite/src')
 try:
     from ppv import Presentations
     from ppv.enum.MsoTextOrientation import MsoTextOrientation
+    from ppv.enum.MsoTriState import MsoTriState
+
     from ppv.utils.rgbcolor import RGB
 except:
     pass
@@ -181,19 +183,33 @@ tf = sp.TextFrame
 tr = tf.TextRange
 # tr.e.dump()
 print()
-t = tr.e.find('.//'+tr.e.qn('a:t'))
+# t = tr.e.find('.//'+tr.e.qn('a:t'))
 # t.text = ''
 print(tr.Text)
+# print(tr.Font.Bold)
+# tr.Font.Bold = MsoTriState.msoTrue
+# print(tr.Font.Bold)
+print()
 print()
 tr_ = tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
+tr_.Font.Bold = MsoTriState.msoTrue
 print("$: ", tr_.Text)
 print("$: ", tr.Text)
 print()
 tr_ = tr.InsertBefore("=inser\r\nted be\r\nfore=\r\n")
-# tr.e.dump()
+tr.e.dump()
 print("$: ", tr_.Text)
 print("$: ", tr.Text)
 print()
-# # tr._istart = 2
-# # tr._length = 1
-# # tr.isolate()
+print(tr_.Font.Underline)
+tr_.Font.Underline = MsoTriState.msoTrue
+print(tr_.Font.Underline)
+print()
+pres.SaveAs("tmp/saved.pptx")
+
+# -------------------------------------------------
+# tr.InsertAfter("A\r\nB")
+# tr3 = tr.Characters(5)
+# tr3.InsertAfter("Some\r\ntime")
+# print(tr.Text)
+# tr4 = tr.Characters(7, 2)

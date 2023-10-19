@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 from ppv import Application
 from ppv.core.parser import Parser
+from ppv.enum.MsoTextOrientation import MsoTextOrientation
 
 
 @pytest.fixture
@@ -79,3 +80,14 @@ def parser():
 def pres_xml(parser, pres_xml_path):
     with open(pres_xml_path) as f:
         return parser.parse(f).getroot()
+
+
+@pytest.fixture
+def shapes(shapes_pres):
+    return shapes_pres.Slides.Item(1).Shapes
+
+
+@pytest.fixture
+def textbox(shapes):
+    return shapes.AddTextbox(MsoTextOrientation.msoTextOrientationHorizontal,
+                             10, 10, 200, 10)

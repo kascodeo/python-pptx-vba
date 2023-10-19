@@ -16,7 +16,7 @@ class FillFormat():
     def Solid(self):
         textrange = self.Parent.Parent
         textrange.isolate()
-        for rpr in textrange.get_rpr():
+        for rpr in textrange.get_rpr_in_range():
             fill = self.get_fill_e(rpr)
             if fill is not None and fill.ln != self._solid:
                 fill.getparent().remove(fill)

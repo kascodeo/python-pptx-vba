@@ -244,7 +244,9 @@ class TextRange():
 
         flag = False
         if len(chars) == 0:
+
             if self.istart == 0:
+                # add a char in this range will be removed later
                 p, r, t = self.get_or_create_p_r_t()
                 t.text = 'Z'
                 flag = True
@@ -256,30 +258,48 @@ class TextRange():
         r = ch.r
         p = ch.p
         if line_first != '':
+            # add a new run after the run of last char of this range
             r_ = r.deepcopy()
             r.addnext(r_)
             t_ = r_.findqn('a:t')
-            t_.text = line_first
-            r = r_
+            t_.text = line_first  # first line is the text of new run
+            r = r_  # new run is the reference for the coming runs
+
         if len(lines) > 1:
+            # move the remaining runs in the above para to new para
+            # this is to move text after current range to new para
+            # which is not needed when NewText has no para in it
             lst_r = []
             for e in r.itersiblings():
                 if e.tag == r.tag:
                     lst_r.append(e)
             p_ = self.add_para(p)
+
+            endParaRPr = r.getnext()
+            if endParaRPr.ln == 'endParaRPr':
+                endParaRPr.getparent().remove(endParaRPr)
+                rpr_ = r.findqn('a:rPr')
+                endParaRPr = rpr_.deepcopy()
+                r.addnext(endParaRPr)
+
             for r in reversed(lst_r):
                 p_.insert(0, r)
 
         p = ch.p
         for line in lines[1:]:
+            # NewText has new paras
+            # for each new para add para from first para
+            # add new run in new para and add the text
             p = self.add_para(p)
             r, rpr, t = self.add_run(p)
             t.text = line
         p_ = p.getnext()
         if p_ is not None and p_.tag == p.tag:
+            # join
             self.join_para(p, p_)
 
         if flag:
+            # remove the dummy text if added before
             t = chars[0].t
             text = self.get_text(t)
             t.text = text[1:]
@@ -408,7 +428,7 @@ class TextRange():
         t_.text = t_.text[char.ir+1:]
 
     def join_para(self, base_p, del_p):
-        endpara = del_p[-1]
+        endpara = base_p[-1]
         endpara.getparent().remove(endpara)
         for e in del_p:
             base_p.append(e)
@@ -423,6 +443,8 @@ class TextRange():
         return p
 
     def add_para(self, after_p):
+        # add para with no runs but same endParaRPr.
+        # para is added next to after_p
         p = after_p.deepcopy()
         after_p.addnext(p)
         for r in p.findallqn('a:r'):
@@ -430,11 +452,13 @@ class TextRange():
         return p
 
     def add_run(self, p):
-        r = p.makeelement(p.qn('a:r'), attrib=p[-1].attrib)
+        r = p.makeelement(p.qn('a:r'))
         t = p.makeelement(p.qn('a:t'))
         p.insert(-1, r)
 
-        rpr = r.makeelement(r.qn('a:rPr'))
+        endParaRPr = p[-1]
+        rpr = endParaRPr.deepcopy()
+        rpr.tag = rpr.qn('a:rPr')
         r.insert(0, rpr)
         r.insert(1, t)
         return r, rpr, t
@@ -481,3 +505,64 @@ class TextRange():
 
     def get_c_in_range(self):
         return self.get_chars_in_range()
+
+    def get_rpr_in_range(self):
+        return [r.findqn('a:rPr') for r in self.get_r_in_range()]
+        # chars = self.get_chars_in_range()
+        # lst = []
+        # for char in chars:
+        #     r = char.r
+        #     rpr = r.findqn('a:rPr')
+        #     if (rpr is not None) and (not (rpr in lst)):
+        #         lst.append(rpr)
+        # return lst
+
+    def update_rpr(self, rpr, attr, value):
+        a_latin = 'a:latin'
+        endParaRPr = rpr.getparent().getnext()
+        if endParaRPr is not None and endParaRPr.ln != 'endParaRPr':
+            endParaRPr = None
+
+        if value is None:
+            if attr == 'font':
+                # for font name delete
+                latin = rpr.findqn(a_latin)
+                if latin is not None:
+                    latin.getparent().remove(latin)
+
+                # delete font name for endParaRPr also if run is last in para
+                if endParaRPr is not None:
+                    latin = endParaRPr.findqn(a_latin)
+                    if latin is not None:
+                        latin.getparent().remove(latin)
+            else:
+                # delete bold, underline etc
+                if attr in rpr.attrib:
+                    del rpr.attrib[attr]
+                # delete from endpararpr also if run is last in para
+                if endParaRPr is not None:
+                    if attr in endParaRPr.attrib:
+                        del endParaRPr.attrib[attr]
+        else:
+            if attr == 'font':
+                # for font name update
+                latin = rpr.findqn(a_latin)
+                if latin is None:
+                    latin = rpr.makeelement(rpr.qn(a_latin))
+                    rpr.append(latin)
+                latin.attrib['typeface'] = value
+
+                # update in the endpararpr also if run is last in para
+                if endParaRPr is not None:
+                    latin = endParaRPr.findqn(a_latin)
+                    # create latin if not present
+                    if latin is None:
+                        latin = endParaRPr.makeelement(rpr.qn(a_latin))
+                        endParaRPr.append(latin)
+                    latin.attrib['typeface'] = value
+
+            else:
+                # for bold underline etc update
+                rpr.attrib[attr] = value
+                if endParaRPr is not None:
+                    endParaRPr.attrib[attr] = value
