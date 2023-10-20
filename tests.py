@@ -205,6 +205,10 @@ print(tr_.Font.Underline)
 tr_.Font.Underline = MsoTriState.msoTrue
 print(tr_.Font.Underline)
 print()
+tr_3 = tr_.Characters(3, 5)
+print(tr_3.Font.Size)
+tr_3.Font.Size = 24.5
+print(tr_3.Font.Size)
 pres.SaveAs("tmp/saved.pptx")
 
 # -------------------------------------------------

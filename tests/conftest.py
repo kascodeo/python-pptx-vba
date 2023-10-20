@@ -88,6 +88,16 @@ def shapes(shapes_pres):
 
 
 @pytest.fixture
+def shape_of_table(shapes):
+    return shapes.Item(6)
+
+
+@pytest.fixture
 def textbox(shapes):
     return shapes.AddTextbox(MsoTextOrientation.msoTextOrientationHorizontal,
                              10, 10, 200, 10)
+
+
+@pytest.fixture
+def table(shape_of_table):
+    return shape_of_table.Table

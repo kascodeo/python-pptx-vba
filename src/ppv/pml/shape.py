@@ -44,10 +44,14 @@ class Shape():
     @property
     def TextFrame2(self):
         from ppv.pml.textframe2 import TextFrame2
-
-        if self._textframe2 is None:
-            self._textframe2 = TextFrame2(self, self.e.findqn('p:txBody'))
-        return self._textframe2
+        if self.HasTextFrame:
+            if self._textframe2 is None:
+                if self.e.tag == self.e.qn('p:sp'):
+                    pfxtag = 'p:txBody'
+                elif self.e.tag == self.e.qn('a:tc'):
+                    pfxtag = 'a:txBody'
+                self._textframe2 = TextFrame2(self, self.e.findqn(pfxtag))
+            return self._textframe2
 
     @property
     def HasChart(self):
