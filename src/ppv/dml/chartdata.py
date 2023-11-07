@@ -1,0 +1,2 @@
+class ChartData():
+    pass

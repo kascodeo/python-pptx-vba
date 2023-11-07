@@ -20,4 +20,7 @@ class SlideLayout(XmlTypeobj):
 
     @property
     def Shapes(self):
-        pass
+        from ppv.pml.shapes import Shapes
+        if not hasattr(self, "_shapes"):
+            self._shapes = Shapes(self)
+        return self._shapes

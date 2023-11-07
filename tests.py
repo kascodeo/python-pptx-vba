@@ -153,7 +153,7 @@ except:
 # print()
 # tbl.Rows.Add(2)
 # print('tbl.Rows.Count =', tbl.Rows.Count)
-# cl = tbl.Rows.Item(2).Cells.Item(1)
+# cl = tbl.Rows.Item(2).Cells.Item(2)
 # print(cl.Shape.TextFrame.TextRange.Text)
 # cl.Shape.TextFrame.TextRange.Text = "new text in new row"
 # print(cl.Shape.TextFrame.TextRange.Text)
@@ -166,6 +166,9 @@ except:
 # tbl.Columns.Add(2)
 # print('tbl.Columns.Count =', tbl.Columns.Count)
 # print()
+# tr = cl.Shape.TextFrame2.TextRange.InsertAfter("=Inserted After=")
+# tr.Font.Fill.ForeColor.RGB = RGB(255, 120, 0)
+# cl.Shape.Fill.BackColor.RGB = RGB(0, 255, 0)
 # pres.SaveAs("tmp/saved.pptx")
 
 # -----------------------------
@@ -179,7 +182,7 @@ pres = Presentations.Add()
 sld = pres.Slides.Item(1)
 sp = sld.Shapes.AddTextbox(
     MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
-tf = sp.TextFrame
+tf = sp.TextFrame2
 tr = tf.TextRange
 # tr.e.dump()
 print()
@@ -209,11 +212,40 @@ tr_3 = tr_.Characters(3, 5)
 print(tr_3.Font.Size)
 tr_3.Font.Size = 24.5
 print(tr_3.Font.Size)
+
+tr_.Font.Fill.Solid()
+tr_.Font.Fill.ForeColor.RGB = RGB(255, 120, 0)
+print(tr_.Font.Fill.ForeColor.RGB)
+sp.Fill.BackColor.RGB = RGB(120, 0, 0)
+# sp.Fill.BackColor.RGB = None
 pres.SaveAs("tmp/saved.pptx")
 
 # -------------------------------------------------
-# tr.InsertAfter("A\r\nB")
-# tr3 = tr.Characters(5)
-# tr3.InsertAfter("Some\r\ntime")
-# print(tr.Text)
-# tr4 = tr.Characters(7, 2)
+# pres = Presentations.Open2007("tmp/barchart.pptx")
+# sld = pres.Slides.Item(1)
+# sp = sld.Shapes.Item(1)
+# ch = sp.Chart
+# -------------------------------------------------
+# pres = Presentations.Open2007("tmp/picture.pptx")
+# sld = pres.Slides.Item(1)
+# sp = sld.Shapes.Item(1)
+# pf = sp.PictureFormat
+# pf.CropTop = 200
+# pf.CropRight = 50
+# pf.CropBottom = 50
+# pf.CropLeft = 25
+# pres.SaveAs("tmp/saved.pptx")
+# -------------------------------------------------
+pres = Presentations.Open2007(
+    "tmp/blabk+ph_content_picture_onlineimage.pptx")
+sld = pres.Slides.Item(1)
+sps = sld.Shapes
+# cl = sps.Parent.CustomLayout
+# sps_ = cl.Shapes
+sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+sps.AddPicture(r'tmp/wide.png', False, True, 100, 200, 300, 400)
+sps.AddPicture(r'tmp/high.png', False, True, 100, 200, 300, 400)
+pres.SaveAs("tmp/saved.pptx")

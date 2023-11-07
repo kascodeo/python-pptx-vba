@@ -1,5 +1,6 @@
 from .shapes import Shapes
 from ..dml.cell import Cell
+from ..enum.MsoShapeType import MsoShapeType
 
 
 class Shape():
@@ -9,6 +10,8 @@ class Shape():
         self._textframe = None
         self._textframe2 = None
         self._table = None
+        self._chart = None
+        self._pictureformat = None
 
     @property
     def e(self):
@@ -55,7 +58,19 @@ class Shape():
 
     @property
     def HasChart(self):
-        pass
+        if self.e_chart is not None:
+            return True
+        return False
+
+    @property
+    def Chart(self):
+        from ..dml.chart import Chart
+        if self.HasChart:
+            if self._chart is None:
+                rid = self.e_chart.getqn('r:id')
+                chartspace = self.Parent.part.get_related_part(rid).typeobj
+                self._chart = Chart(self, chartspace)
+            return self._chart
 
     @property
     def HasTable(self):
@@ -67,7 +82,8 @@ class Shape():
     def Table(self):
         from ..dml.table import Table
         if self.HasTable:
-            self._table = Table(self)
+            if self._table is None:
+                self._table = Table(self)
             return self._table
 
     @property
@@ -95,6 +111,13 @@ class Shape():
         pass
 
     @property
+    def PictureFormat(self):
+        from ..dml.pictureformat import PictureFormat
+        if self._pictureformat is None:
+            self._pictureformat = PictureFormat(self)
+        return self._pictureformat
+
+    @property
     def PlaceholderFormat(self):
         pass
 
@@ -112,7 +135,10 @@ class Shape():
 
     @property
     def Type(self):
-        pass
+        if self.e.tag == self.e.qn('p:pic'):
+            return MsoShapeType.msoPicture
+        if self.HasChart:
+            return MsoShapeType.msoChart
 
     @property
     def Width(self):
@@ -120,7 +146,10 @@ class Shape():
 
     @property
     def Fill(self):
-        pass
+        from ppv.dml.fillformat import FillFormat
+        if not hasattr(self, '_fill'):
+            self._fill = FillFormat(self)
+        return self._fill
 
     @property
     def Line(self):
@@ -129,3 +158,19 @@ class Shape():
     @property
     def OLEFormat(self):
         pass
+
+    @property
+    def spPr(self):
+        return self.e.findqn('p:spPr')
+
+    @property
+    def e_Pr(self):
+        ns = self.e.ns
+        ln = self.e.ln
+        pr = '{'+ns+'}'+ln+'Pr'
+        return self.e.find(pr)
+
+    @property
+    def e_chart(self):
+        nsmap = {'c': "http://schemas.openxmlformats.org/drawingml/2006/chart"}
+        return self.e.find('.//'+self.e.qn('c:chart', nsmap=nsmap))

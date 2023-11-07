@@ -517,6 +517,10 @@ class TextRange():
         #         lst.append(rpr)
         # return lst
 
+    def update_lst_rpr(self, attr, value):
+        for rpr in self.get_rpr_in_range():
+            self.update_rpr(rpr, attr, value)
+
     def update_rpr(self, rpr, attr, value):
         a_latin = 'a:latin'
         endParaRPr = rpr.getparent().getnext()
@@ -535,6 +539,14 @@ class TextRange():
                     latin = endParaRPr.findqn(a_latin)
                     if latin is not None:
                         latin.getparent().remove(latin)
+            elif attr == 'rgb':
+                solidFill = rpr.findqn('a:solidFill')
+                if solidFill is not None:
+                    solidFill.getparent().remove(solidFill)
+                if endParaRPr is not None:
+                    solidFill = endParaRPr.findqn('a:solidFill')
+                    if solidFill is not None:
+                        solidFill.getparent().remove(solidFill)
             else:
                 # delete bold, underline etc
                 if attr in rpr.attrib:
@@ -560,7 +572,35 @@ class TextRange():
                         latin = endParaRPr.makeelement(rpr.qn(a_latin))
                         endParaRPr.append(latin)
                     latin.attrib['typeface'] = value
+            elif attr == 'rgb':
+                # for font name update
+                a_solidFill = 'a:solidFill'
+                a_srgbClr = 'a:srgbClr'
+                solidFill = rpr.findqn(a_solidFill)
+                if solidFill is None:
+                    solidFill = rpr.makeelement(rpr.qn(a_solidFill))
+                    rpr.append(solidFill)
+                srgbClr = solidFill.findqn(a_srgbClr)
+                if srgbClr is None:
+                    srgbClr = solidFill.makeelement(solidFill.qn(a_srgbClr))
+                    solidFill.append(srgbClr)
 
+                srgbClr.attrib['val'] = value
+
+                # update in the endpararpr also if run is last in para
+                if endParaRPr is not None:
+                    solidFill = endParaRPr.findqn(a_solidFill)
+                    # create latin if not present
+                    if solidFill is None:
+                        solidFill = endParaRPr.makeelement(rpr.qn(a_solidFill))
+                        endParaRPr.append(solidFill)
+                    srgbClr = solidFill.findqn(a_srgbClr)
+                    if srgbClr is None:
+                        srgbClr = solidFill.makeelement(
+                            solidFill.qn(a_srgbClr))
+                        solidFill.append(srgbClr)
+
+                    srgbClr.attrib['val'] = value
             else:
                 # for bold underline etc update
                 rpr.attrib[attr] = value

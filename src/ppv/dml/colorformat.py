@@ -1,8 +1,17 @@
+from ppv.dml.font2 import Font2
+from ppv.pml.shape import Shape
+from ppv.utils.rgbcolor import MsoRGBType
+
+
 class ColorFormat():
     _srgb_pfxname = 'a:srgbClr'
+    _kind_forecolor = 'forecolor'
+    _kind_backcolor = 'backcolor'
+    a_srgbClr = 'a:srgbClr'
 
-    def __init__(self, fillformat):
+    def __init__(self, fillformat, kind):
         self._fillformat = fillformat
+        self._kind = kind
 
     @property
     def Brightness(self):
@@ -21,8 +30,12 @@ class ColorFormat():
         return self._fillformat
 
     @property
-    def _textframe(self):
+    def _textrange(self):
         return self.Parent.Parent.Parent
+
+    @property
+    def _shape(self):
+        return self.Parent.Parent
 
     @property
     def RGB(self):
@@ -30,15 +43,38 @@ class ColorFormat():
 
     @RGB.setter
     def RGB(self, value):
-        from ppv.utils.rgbcolor import MsoRGBType
-        if not isinstance(value, MsoRGBType):
+        if not (isinstance(value, MsoRGBType) or value is None):
             raise TypeError("value must be object of MsoRGBType")
 
-        for rpr in self._textframe.get_rpr():
-            fill = self.Parent.get_fill_e(rpr)
-            if fill is not None:
-                srgb = fill.findqn(self._srgb_pfxname)
-                if srgb is None:
-                    srgb = fill.makeelement(fill.qn(self._srgb_pfxname))
-                    fill.insert(0, srgb)
-                srgb.set('val', value.hexstr.upper())
+        if isinstance(self.Parent.Parent, Font2):
+            self.change_font_color(value)
+
+        if isinstance(self.Parent.Parent, Shape):
+            self.change_shape_color(value)
+
+    def change_font_color(self, value):
+        if self._kind == 'forecolor':
+            self._textrange.update_lst_rpr(
+                'rgb', self._get_none_or_rgbhex(value))
+
+    def change_shape_color(self, value):
+        sp = self.Parent.Parent
+        # spPr = sp.spPr
+        spPr = sp.e_Pr
+        value = self._get_none_or_rgbhex(value)
+        if self._kind == self._kind_backcolor:
+            if value is None:
+                self.Parent.set_noFill(spPr)
+            else:
+                solidFill = self.Parent.set_solidFill(spPr)
+                self.set_srgbClr(solidFill, value)
+
+    def set_srgbClr(self, e, value):
+        srgbClr = e.findqn(self.a_srgbClr)
+        if srgbClr is None:
+            srgbClr = e.makeelement(e.qn(self.a_srgbClr))
+            e.insert(0, srgbClr)
+        srgbClr.set('val', value)
+
+    def _get_none_or_rgbhex(self, value):
+        return None if value is None else value.hexstr.upper()

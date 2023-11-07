@@ -49,3 +49,19 @@ class Package(OPCPackage):
     @property
     def document(self):
         return self._document
+
+    def get_uri_type_picture(self, filename):
+        ext = filename.split('.')[-1].lower()
+        i = 0
+        for uri_str in self._parts:
+            pattern = '/ppt/media/image'
+            if uri_str.startswith(pattern):
+                i_ = int(uri_str.split('.')[0].replace(pattern, ''))
+                if i_ > i:
+                    i = i_
+        return '{}{}.{}'.format(pattern, i+1, ext), 'image/'+ext
+
+    def add_part_picture(self, filename):
+        uri_str, type_ = self.get_uri_type_picture(filename)
+        part = self.add_part(uri_str, type_)
+        return part
