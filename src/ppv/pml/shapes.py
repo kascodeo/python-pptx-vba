@@ -1,9 +1,12 @@
+
+from PIL import Image
 from ppv.pml.slide import Slide
 from ppv.pml.slidelayout import SlideLayout
 from ..core.collection import Collection
-from PIL import Image
 from ..img.image import Image as Img
 from ..utils.length import Length
+from ..enum.XlChartType import XlChartType
+from ..dml.chartspace import ChartSpace
 
 
 class Shapes(Collection):
@@ -78,8 +81,9 @@ class Shapes(Collection):
                         self.e.findall('.//'+self.e.qn('p:cNvPr')+'[@id]')
                         ]) + 1)
 
-    def AddChart2(self):
-        pass
+    def AddChart(self, Style=None, Type=None, Left=None, Top=None, Width=None,
+                 Height=None, NewLayout=None):
+        self._AddChart(Style, Type, Left, Top, Width, Height, NewLayout)
 
     def AddConnector(self):
         pass
@@ -116,6 +120,120 @@ class Shapes(Collection):
 
     def Title(self):
         pass
+
+    def _AddChart(self, Style, Type, Left, Top, Width, Height, NewLayout):
+        # add part in package, chart xml
+        # add part in package, xlsx file as embeddings
+        # add part in package, colors xml
+        # add part in package, styles.xml
+        #
+        # add relspart in package, rels xml for chart xml part
+        # add relation in to xlsx, colors, styles
+        # add xml in spTree
+        #   update id, name, rid
+        #
+        # add content type of chart xml
+        # add content type of xlsx embed
+        # add content type of colors xml
+        # add content type of styles.xml
+        if Type not in list(XlChartType) + [t.value for t in XlChartType]:
+            raise ValueError("Unknown Type {}".format(Type))
+
+        if Type == XlChartType.xlRegionMap:
+            raise ValueError("Unsupported Type: {}".format(Type))
+
+        chart_fname = "chart1.xml"
+        style_fname = "style1.xml"
+        color_fname = "colors1.xml"
+        excel_fname = "Microsoft_Excel_Worksheet.xlsx"
+        rels_fname = "rels.xml"
+
+        xlsx_reltype = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package"
+        color_reltype = "http://schemas.microsoft.com/office/2011/relationships/chartColorStyle"
+        style_reltype = "http://schemas.microsoft.com/office/2011/relationships/chartStyle"
+        chart_reltype = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"
+
+        if isinstance(Type, int):
+            Type = {t.value: t for t in XlChartType}[Type]
+        typename = Type.name
+
+        dpath = self.e.data_path / "chart" / typename
+        chart_fpath = dpath / chart_fname
+        style_fpath = dpath / style_fname
+        color_fpath = dpath / color_fname
+        excel_fpath = dpath / excel_fname
+
+        rels_fpath = self.e.data_path / rels_fname
+
+        part = self.Parent.part
+        relspart = part.get_rels_part()
+
+        chart_uri = part.package.get_available_uri('/ppt/charts/chart.xml')
+        chart_ct = ChartSpace.type
+        part_chart = part.package.add_part(chart_uri, chart_ct)
+        with open(chart_fpath) as f:
+            part_chart.read(f)
+        part.package.types.add_override(part_chart)
+
+        chart_relsuri = part_chart.uri.rels
+        rels_type = part.get_rels_part().type
+        relspart_chart = part.package.add_part(chart_relsuri, rels_type)
+        with open(rels_fpath) as f:
+            relspart_chart.read(f)
+
+        # xlRegionMap does not have spreadsheet as embedding
+        if Type != XlChartType.xlRegionMap:
+            xlsx_uri = part.package.get_available_uri(
+                '/ppt/embeddings/Microsoft_Excel_Worksheet.xlsx')
+            xlsx_ct = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            part_xlsx = part.package.add_part(xlsx_uri, xlsx_ct)
+            with open(excel_fpath, 'rb') as f:
+                part_xlsx.read(f)
+            part.package.types.add_default(part_xlsx)
+
+            target_xlsx = part_chart.uri.get_rel(part_xlsx.uri.str)
+            rid_xlsx = relspart_chart.typeobj.add_relation(xlsx_reltype,
+                                                           target_xlsx)
+
+        # xlSurface,xlSurfaceWireframe,xlSurfaceTopView,xlSurfaceTopViewWireframe
+        #   do not have color and style
+        if Type not in [XlChartType.xlSurface, XlChartType.xlSurfaceWireframe,
+                        XlChartType.xlSurfaceTopViewWireframe,
+                        XlChartType.xlSurfaceTopView]:
+            style_uri = part.package.get_available_uri('/ppt/charts/style.xml')
+            style_ct = "application/vnd.ms-office.chartstyle+xml"
+            part_style = part.package.add_part(style_uri, style_ct)
+            with open(style_fpath) as f:
+                part_style.read(f)
+            part.package.types.add_override(part_style)
+
+            color_uri = part.package.get_available_uri('/ppt/charts/color.xml')
+            color_ct = "application/vnd.ms-office.chartcolorstyle+xml"
+            part_color = part.package.add_part(color_uri, color_ct)
+            with open(color_fpath) as f:
+                part_color.read(f)
+            part.package.types.add_override(part_color)
+
+            target_style = part_chart.uri.get_rel(part_style.uri.str)
+            relspart_chart.typeobj.add_relation(style_reltype, target_style)
+
+            target_color = part_chart.uri.get_rel(part_color.uri.str)
+            relspart_chart.typeobj.add_relation(color_reltype, target_color)
+
+        e_chartspace = part_chart.typeobj.e
+        e_chartspace.findqn('c:externalData').setqn('r:id', rid_xlsx)
+
+        target_chart = part.uri.get_rel(part_chart.uri.str)
+        rid_chart = relspart.typeobj.add_relation(chart_reltype, target_chart)
+
+        e = self.e.parse_file(self.e.data_path / "gf_chart.xml").getroot()
+        e_chart = e.find('.//'+e.qn('a:graphicData'))[0]
+        e_chart.setqn('r:id', rid_chart)
+
+        id_ = self._update_cnvpr_id(e)
+        self._update_cnvpr_name(e, "Chart " + str(id_))
+
+        self.e.append(e)
 
     def _AddPicture(self, FileName, LinkToFile, SaveWithDocument, Left, Top,
                     Width, Height):
@@ -335,3 +453,21 @@ class Shapes(Collection):
             ph = sp.e.find('.//'+sp.e.qn('p:ph')+'[@idx="'+idx+'"]')
             if ph is not None:
                 return sp
+
+    def _get_next_cnvpr_id(self):
+        i = 0
+        for e in self.e.findall('.//'+self.e.qn('p:cNvPr')+'[@id]'):
+            id_ = int(e.get('id'))
+            if id_ > i:
+                i = id_
+        return i + 1
+
+    def _update_cnvpr_id(self, e):
+        cnvpr = e.find('.//'+e.qn('p:cNvPr'))
+        id_ = self._get_next_cnvpr_id()
+        cnvpr.set('id', str(id_))
+        return id_
+
+    def _update_cnvpr_name(self, e, name):
+        cnvpr = e.find('.//'+e.qn('p:cNvPr'))
+        cnvpr.set('name', name)

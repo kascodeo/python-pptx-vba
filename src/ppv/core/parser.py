@@ -22,6 +22,9 @@ class ElementBase(_ElementBase):
         key = self.qn(key)
         return super().get(key, default)
 
+    def setqn(self, key, value, nsmap=None):
+        super().set(self.qn(key, nsmap), value)
+
     def deepcopy(self):
         return deepcopy(self)
 

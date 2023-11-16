@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class XlAxisGroup(Enum):
+class XlChartType(Enum):
     xl3DArea = -4098  # 3D Area.
     xl3DAreaStacked = 78  # 3D Stacked Area.
     xl3DAreaStacked100 = 79  # 100% Stacked Area.
@@ -77,3 +77,36 @@ class XlAxisGroup(Enum):
     xlXYScatterSmooth = 72  # Scatter with Smoothed Lines.
     # Scatter with Smoothed Lines and No Data Markers.
     xlXYScatterSmoothNoMarkers = 73
+
+
+# Sub a()
+#     Dim charttype As Variant
+#     charttype = Array(xl3DArea, xl3DAreaStacked, xl3DAreaStacked100, xl3DBarClustered, xl3DBarStacked, _
+#             xl3DBarStacked100, xl3DColumn, xl3DColumnClustered, xl3DColumnStacked, _
+#             xl3DColumnStacked100, xl3DLine, xl3DPie, xl3DPieExploded, xlArea, xlAreaStacked, _
+#             xlAreaStacked100, xlBarClustered, xlBarOfPie, xlBarStacked, xlBarStacked100, _
+#             xlBubble, xlBubble3DEffect, xlColumnClustered, xlColumnStacked, xlColumnStacked100, _
+#             xlConeBarClustered, xlConeBarStacked, xlConeBarStacked100, xlConeCol, xlConeColClustered, _
+#             xlConeColStacked, xlConeColStacked100, xlCylinderBarClustered, xlCylinderBarStacked, _
+#             xlCylinderBarStacked100, xlCylinderCol, xlCylinderColClustered, xlCylinderColStacked, _
+#             xlCylinderColStacked100, xlDoughnut, xlDoughnutExploded, xlLine, xlLineMarkers, _
+#             xlLineMarkersStacked, xlLineMarkersStacked100, xlLineStacked, xlLineStacked100, _
+#             xlPie, xlPieExploded, xlPieOfPie, xlPyramidBarClustered, xlPyramidBarStacked, _
+#             xlPyramidBarStacked100, xlPyramidCol, xlPyramidColClustered, xlPyramidColStacked, _
+#             xlPyramidColStacked100, xlRadar, xlRadarFilled, _
+#             xlRadarMarkers, xlRegionMap, xlStockHLC, xlStockOHLC, xlStockVHLC, xlStockVOHLC, _
+#             xlSurface, xlSurfaceTopView, xlSurfaceTopViewWireframe, xlSurfaceWireframe, _
+#             xlXYScatter, xlXYScatterLines, xlXYScatterLinesNoMarkers, xlXYScatterSmooth, _
+#             xlXYScatterSmoothNoMarkers)
+#     Dim pres As Presentation, sld As Slide
+#     For Each ct In charttype
+#         Set pres = Presentations.Add()
+#         Set cl = pres.SlideMaster.CustomLayouts(7)
+#         Set sld = ActivePresentation.Slides.AddSlide(1, cl)
+#         Set c = sld.Shapes.AddChart2(Type:=ct)
+#         pres.SaveAs ("chart" & ct)
+#         pres.Close
+#     Next ct
+
+
+# End Sub

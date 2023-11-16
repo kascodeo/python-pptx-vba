@@ -61,6 +61,20 @@ class Package(OPCPackage):
                     i = i_
         return '{}{}.{}'.format(pattern, i+1, ext), 'image/'+ext
 
+    def get_available_uri(self, base_uri):
+        base, ext = base_uri.split('.')
+        ext = ext.lower()
+        i = 0
+        for uri_str in self._parts:
+            if uri_str.startswith(base):
+                try:
+                    i_ = int(uri_str.split('.')[0].replace(base, ''))
+                    if i_ > i:
+                        i = i_
+                except ValueError:
+                    pass
+        return base + str(i+1)+'.'+ext
+
     def add_part_picture(self, filename):
         uri_str, type_ = self.get_uri_type_picture(filename)
         part = self.add_part(uri_str, type_)

@@ -147,6 +147,70 @@ class Chart():
         return self.e_plotArea.findqn('c:barChart')
 
     @property
+    def e_bar3DChart(self):
+        return self.e_plotArea.findqn('c:bar3DChart')
+
+    @property
+    def e_lineChart(self):
+        return self.e_plotArea.findqn('c:lineChart')
+
+    @property
+    def e_line3DChart(self):
+        return self.e_plotArea.findqn('c:line3DChart')
+
+    @property
+    def e_pieChart(self):
+        return self.e_plotArea.findqn('c:pieChart')
+
+    @property
+    def e_pie3DChart(self):
+        return self.e_plotArea.findqn('c:pie3DChart')
+
+    @property
+    def e_ofPieChart(self):
+        return self.e_plotArea.findqn('c:ofPieChart')
+
+    @property
+    def e_doughnutChart(self):
+        return self.e_plotArea.findqn('c:doughnutChart')
+
+    @property
+    def e_areaChart(self):
+        return self.e_plotArea.findqn('c:areaChart')
+
+    @property
+    def e_area3DChart(self):
+        return self.e_plotArea.findqn('c:area3DChart')
+
+    @property
+    def e_scatterChart(self):
+        return self.e_plotArea.findqn('c:scatterChart')
+
+    @property
+    def e_bubbleChart(self):
+        return self.e_plotArea.findqn('c:bubbleChart')
+
+    @property
+    def e_stockChart(self):
+        return self.e_plotArea.findqn('c:stockChart')
+
+    @property
+    def e_surface3DChart(self):
+        return self.e_plotArea.findqn('c:surface3DChart')
+
+    @property
+    def e_surfaceChart(self):
+        return self.e_plotArea.findqn('c:surfaceChart')
+
+    @property
+    def e_radarChart(self):
+        return self.e_plotArea.findqn('c:radarChart')
+
+    @property
+    def e_plotAreaRegion(self):
+        return self.e_plotArea.findqn('c:plotAreaRegion')
+
+    @property
     def e_catAx(self):
         return self.e_plotArea.findqn('c:catAx')
 

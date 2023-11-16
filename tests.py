@@ -2,6 +2,7 @@
 import os
 import sys
 
+
 sys.path.insert(0, './src')
 sys.path.insert(0, '../python-opc-lite/src')
 
@@ -9,7 +10,7 @@ try:
     from ppv import Presentations
     from ppv.enum.MsoTextOrientation import MsoTextOrientation
     from ppv.enum.MsoTriState import MsoTriState
-
+    from ppv.enum.XlChartType import XlChartType
     from ppv.utils.rgbcolor import RGB
 except:
     pass
@@ -178,47 +179,47 @@ except:
 # sld.NotesPage
 
 # ------------------------------
-pres = Presentations.Add()
-sld = pres.Slides.Item(1)
-sp = sld.Shapes.AddTextbox(
-    MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
-tf = sp.TextFrame2
-tr = tf.TextRange
+# pres = Presentations.Add()
+# sld = pres.Slides.Item(1)
+# sp = sld.Shapes.AddTextbox(
+#     MsoTextOrientation.msoTextOrientationHorizontal, 0, 0, 200, 50)
+# tf = sp.TextFrame2
+# tr = tf.TextRange
+# # tr.e.dump()
+# print()
+# # t = tr.e.find('.//'+tr.e.qn('a:t'))
+# # t.text = ''
+# print(tr.Text)
+# # print(tr.Font.Bold)
+# # tr.Font.Bold = MsoTriState.msoTrue
+# # print(tr.Font.Bold)
+# print()
+# print()
+# tr_ = tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
+# tr_.Font.Bold = MsoTriState.msoTrue
+# print("$: ", tr_.Text)
+# print("$: ", tr.Text)
+# print()
+# tr_ = tr.InsertBefore("=inser\r\nted be\r\nfore=\r\n")
 # tr.e.dump()
-print()
-# t = tr.e.find('.//'+tr.e.qn('a:t'))
-# t.text = ''
-print(tr.Text)
-# print(tr.Font.Bold)
-# tr.Font.Bold = MsoTriState.msoTrue
-# print(tr.Font.Bold)
-print()
-print()
-tr_ = tr.InsertAfter("-inserted after\r\n+new \r\nparagraph+-")
-tr_.Font.Bold = MsoTriState.msoTrue
-print("$: ", tr_.Text)
-print("$: ", tr.Text)
-print()
-tr_ = tr.InsertBefore("=inser\r\nted be\r\nfore=\r\n")
-tr.e.dump()
-print("$: ", tr_.Text)
-print("$: ", tr.Text)
-print()
-print(tr_.Font.Underline)
-tr_.Font.Underline = MsoTriState.msoTrue
-print(tr_.Font.Underline)
-print()
-tr_3 = tr_.Characters(3, 5)
-print(tr_3.Font.Size)
-tr_3.Font.Size = 24.5
-print(tr_3.Font.Size)
+# print("$: ", tr_.Text)
+# print("$: ", tr.Text)
+# print()
+# print(tr_.Font.Underline)
+# tr_.Font.Underline = MsoTriState.msoTrue
+# print(tr_.Font.Underline)
+# print()
+# tr_3 = tr_.Characters(3, 5)
+# print(tr_3.Font.Size)
+# tr_3.Font.Size = 24.5
+# print(tr_3.Font.Size)
 
-tr_.Font.Fill.Solid()
-tr_.Font.Fill.ForeColor.RGB = RGB(255, 120, 0)
-print(tr_.Font.Fill.ForeColor.RGB)
-sp.Fill.BackColor.RGB = RGB(120, 0, 0)
-# sp.Fill.BackColor.RGB = None
-pres.SaveAs("tmp/saved.pptx")
+# tr_.Font.Fill.Solid()
+# tr_.Font.Fill.ForeColor.RGB = RGB(255, 120, 0)
+# print(tr_.Font.Fill.ForeColor.RGB)
+# sp.Fill.BackColor.RGB = RGB(120, 0, 0)
+# # sp.Fill.BackColor.RGB = None
+# pres.SaveAs("tmp/saved.pptx")
 
 # -------------------------------------------------
 # pres = Presentations.Open2007("tmp/barchart.pptx")
@@ -236,16 +237,28 @@ pres.SaveAs("tmp/saved.pptx")
 # pf.CropLeft = 25
 # pres.SaveAs("tmp/saved.pptx")
 # -------------------------------------------------
-pres = Presentations.Open2007(
-    "tmp/blabk+ph_content_picture_onlineimage.pptx")
-sld = pres.Slides.Item(1)
-sps = sld.Shapes
-# cl = sps.Parent.CustomLayout
-# sps_ = cl.Shapes
-sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
-sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
-sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
-sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
-sps.AddPicture(r'tmp/wide.png', False, True, 100, 200, 300, 400)
-sps.AddPicture(r'tmp/high.png', False, True, 100, 200, 300, 400)
+# pres = Presentations.Open2007(
+#     "tmp/blabk+ph_content_picture_onlineimage.pptx")
+# sld = pres.Slides.Item(1)
+# sps = sld.Shapes
+# # cl = sps.Parent.CustomLayout
+# # sps_ = cl.Shapes
+# sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+# sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+# sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+# sps.AddPicture(r'tmp/weeder.png', False, True, 100, 200, 300, 400)
+# sps.AddPicture(r'tmp/wide.png', False, True, 100, 200, 300, 400)
+# sps.AddPicture(r'tmp/high.png', False, True, 100, 200, 300, 400)
+# pres.SaveAs("tmp/saved.pptx")
+# -------------------------------------------------
+pres = Presentations.Open2007("tmp/blank.pptx")
+cl = pres.Slides.Item(1).CustomLayout
+for ct in XlChartType:
+    print(ct)
+    if ct == XlChartType.xlRegionMap:
+        print("skip:", ct)
+        continue
+    pres.Slides.AddSlide(pres.Slides.Count+1, cl).Shapes.AddChart(Type=ct)
+
 pres.SaveAs("tmp/saved.pptx")
+#
